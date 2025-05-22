@@ -1,0 +1,415 @@
+```{r}
+
+# Step 1: Setting up the working directory
+setwd("E:/College Assignment/saurav") 
+
+# Step 2: Loading the dataset from CSV file
+data <- read.csv("dataset.csv")
+
+# Step 3: Looking at the first few rows in the dataset
+head(data)
+
+# Renaming columns so that it is easy to understand
+colnames(data) <- c("temperature", "vacuum", "pressure", "humidity", "energy_output")
+head(data)
+
+
+
+# Loading the ggplot library
+library(ggplot2)
+
+# Adding a time column
+data$time <- 1:nrow(data)
+
+
+# Task 1.1 --> Time Series Plots
+
+# Plot each variable over time
+ggplot(data, aes(x = time, y = temperature)) + 
+  geom_line(color = "tomato") + 
+  labs(title = "Temperature over Time", y = "Temperature (°C)")
+
+ggplot(data, aes(x = time, y = vacuum)) + 
+  geom_line(color = "darkgreen") + 
+  labs(title = "Vacuum over Time", y = "Vacuum (cm Hg)")
+
+ggplot(data, aes(x = time, y = pressure)) + 
+  geom_line(color = "steelblue") + 
+  labs(title = "Pressure over Time", y = "Pressure (mbar)")
+
+ggplot(data, aes(x = time, y = humidity)) + 
+  geom_line(color = "orange") + 
+  labs(title = "Humidity over Time", y = "Humidity (%)")
+
+ggplot(data, aes(x = time, y = energy_output)) + 
+  geom_line(color = "purple") + 
+  labs(title = "Energy Output over Time", y = "Energy Output (MW)")
+
+
+
+# Task 1.2 --> Distribution Analysis
+
+# Temperature
+ggplot(data, aes(x = temperature)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_density(color = "darkblue", size = 1) +
+  labs(title = "Distribution of Temperature", x = "Temperature (°C)", y = "Density")
+
+# Pressure
+ggplot(data, aes(x = pressure)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "lightgreen", color = "black", alpha = 0.7) +
+  geom_density(color = "darkgreen", size = 1) +
+  labs(title = "Distribution of Pressure", x = "Pressure (mbar)", y = "Density")
+
+# Humidity
+ggplot(data, aes(x = humidity)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "khaki", color = "black", alpha = 0.7) +
+  geom_density(color = "orange", size = 1) +
+  labs(title = "Distribution of Humidity", x = "Humidity (%)", y = "Density")
+
+# Vacuum
+ggplot(data, aes(x = vacuum)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "plum", color = "black", alpha = 0.7) +
+  geom_density(color = "purple", size = 1) +
+  labs(title = "Distribution of Vacuum", x = "Vacuum (cm Hg)", y = "Density")
+
+# Energy Output
+ggplot(data, aes(x = energy_output)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "lightcoral", color = "black", alpha = 0.7) +
+  geom_density(color = "red4", size = 1) +
+  labs(title = "Distribution of Energy Output", x = "Energy Output (MW)", y = "Density")
+
+
+
+
+
+# Task 1.3 --> Correlation Analysis
+
+
+library(ggplot2)
+
+# 1. Basic correlation matrix (console output only)
+cor_matrix <- round(cor(data), 2)
+print(cor_matrix)
+
+# 2. Simple scatter plots against energy_output (x2)
+variables <- c("temperature", "vacuum", "pressure", "humidity")
+
+par(mfrow = c(2, 2), mar = c(4, 4, 2, 1))
+
+for (var in variables) {
+  plot(data[[var]], data$energy_output,
+       main = paste("Energy Output vs", var),
+       xlab = var,
+       ylab = "Energy Output (MW)",
+       pch = 20, col = "steelblue")
+  grid()  # Add grid lines for readability
+}
+
+# Task 2: Regression Modeling
+
+# Task 2.1: Estimate parameters via least squares for all 5 models
+
+# Model 1: energy_output ~ temperature
+model1 <- lm(energy_output ~ temperature, data = data)
+summary(model1)
+
+# Model 2: energy_output ~ vacuum
+model2 <- lm(energy_output ~ vacuum, data = data)
+summary(model2)
+
+# Model 3: energy_output ~ pressure
+model3 <- lm(energy_output ~ pressure, data = data)
+summary(model3)
+
+# Model 4: energy_output ~ humidity
+model4 <- lm(energy_output ~ humidity, data = data)
+summary(model4)
+
+# Model 5: energy_output ~ temperature + vacuum + pressure + humidity
+model5 <- lm(energy_output ~ temperature + vacuum + pressure + humidity, data = data)
+summary(model5)
+
+
+
+
+# Task 2.2--> Compute RSS.
+
+# Function to compute RSS for a model
+compute_rss <- function(model) {
+  sum(residuals(model)^2)
+}
+
+# Calculate RSS for each model
+rss1 <- compute_rss(model1)
+rss2 <- compute_rss(model2)
+rss3 <- compute_rss(model3)
+rss4 <- compute_rss(model4)
+rss5 <- compute_rss(model5)
+
+# Print RSS values
+cat("RSS Model 1:", rss1, "\n")
+cat("RSS Model 2:", rss2, "\n")
+cat("RSS Model 3:", rss3, "\n")
+cat("RSS Model 4:", rss4, "\n")
+cat("RSS Model 5:", rss5, "\n")
+
+
+
+
+# Task 2.3 --> Compute Log-likelihood.
+# Compute log-likelihoods for each model
+loglik1 <- logLik(model1)
+loglik2 <- logLik(model2)
+loglik3 <- logLik(model3)
+loglik4 <- logLik(model4)
+loglik5 <- logLik(model5)
+
+# Print the log-likelihood values
+cat("Log-Likelihood Model 1:", loglik1, "\n")
+cat("Log-Likelihood Model 2:", loglik2, "\n")
+cat("Log-Likelihood Model 3:", loglik3, "\n")
+cat("Log-Likelihood Model 4:", loglik4, "\n")
+cat("Log-Likelihood Model 5:", loglik5, "\n")
+
+
+# Task 2.4 ---> Compute AIC and BIC for each model
+
+# Calculate AIC for each model
+aic1 <- AIC(model1)
+aic2 <- AIC(model2)
+aic3 <- AIC(model3)
+aic4 <- AIC(model4)
+aic5 <- AIC(model5)
+
+# Calculate BIC for each model
+bic1 <- BIC(model1)
+bic2 <- BIC(model2)
+bic3 <- BIC(model3)
+bic4 <- BIC(model4)
+bic5 <- BIC(model5)
+
+# Print AIC values
+cat("AIC Model 1:", aic1, "\n")
+cat("AIC Model 2:", aic2, "\n")
+cat("AIC Model 3:", aic3, "\n")
+cat("AIC Model 4:", aic4, "\n")
+cat("AIC Model 5:", aic5, "\n\n")
+
+# Print BIC values
+cat("BIC Model 1:", bic1, "\n")
+cat("BIC Model 2:", bic2, "\n")
+cat("BIC Model 3:", bic3, "\n")
+cat("BIC Model 4:", bic4, "\n")
+cat("BIC Model 5:", bic5, "\n")
+
+
+
+
+# Task 2.5 --> Q-Q plots for residuals.
+
+
+# Set plotting layout: 2 rows, 3 columns (1 empty)
+par(mfrow = c(2, 3), mar = c(4, 4, 2, 1))
+
+# Q-Q plot for Model 1
+qqnorm(residuals(model1), main = "Q-Q Plot: Model 1 (temperature)")
+qqline(residuals(model1), col = "red")
+
+# Q-Q plot for Model 2
+qqnorm(residuals(model2), main = "Q-Q Plot: Model 2 (vacuum)")
+qqline(residuals(model2), col = "red")
+
+# Q-Q plot for Model 3
+qqnorm(residuals(model3), main = "Q-Q Plot: Model 3 (pressure)")
+qqline(residuals(model3), col = "red")
+
+# Q-Q plot for Model 4
+qqnorm(residuals(model4), main = "Q-Q Plot: Model 4 (humidity)")
+qqline(residuals(model4), col = "red")
+
+# Q-Q plot for Model 5
+qqnorm(residuals(model5), main = "Q-Q Plot: Model 5 (all variables)")
+qqline(residuals(model5), col = "red")
+
+# Reset plotting layout back to default
+par(mfrow = c(1,1))
+
+
+
+
+
+# Task 2.6 --> Compare and select the best model.
+
+# Model 5 seems the best so far.
+
+
+# Task 2.7 --> Split data (70/30), train, test, and predict with 95% CI.
+
+# Load required package
+library(ggplot2)
+
+set.seed(123)  # for reproducibility
+
+# Step 1: Split data 70% train, 30% test
+n <- nrow(data)
+train_indices <- sample(1:n, size = 0.7 * n, replace = FALSE)
+train_data <- data[train_indices, ]
+test_data <- data[-train_indices, ]
+
+# Step 2: Fit best model on training data
+best_model_train <- lm(energy_output ~ temperature + vacuum + pressure + humidity, data = train_data)
+
+# Step 3: Predict on test data with 95% confidence intervals
+predictions <- predict(best_model_train, newdata = test_data, interval = "confidence", level = 0.95)
+
+# Step 4: Combine predictions with actual values
+results <- cbind(test_data, predictions)
+
+# Step 5: Calculate RMSE on test set
+rmse <- sqrt(mean((results$energy_output - results$fit)^2))
+
+# Print RMSE
+cat("Test RMSE:", rmse, "\n")
+
+# Step 6: Calculate residuals
+results$residuals <- results$energy_output - results$fit
+
+# Step 7: Plot residuals vs actual values
+ggplot(results, aes(x = energy_output, y = residuals)) +
+  geom_point(color = "purple", alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+  geom_smooth(method = "loess", se = FALSE, color = "blue") +
+  labs(title = "Residuals vs Actual Energy Output",
+       x = "Actual Energy Output",
+       y = "Residuals (Actual - Predicted)") +
+  theme_minimal()
+
+# Optional: Show first few rows of results
+head(results)
+
+
+
+
+
+# Task 3--> Approximate Bayesian Computation (ABC)
+
+
+# Load required libraries
+library(ggplot2)
+
+# --- Step 1: Choose 2 influential parameters from best model ---
+# Assuming your best model was trained already:
+best_model_train <- lm(energy_output ~ temperature + vacuum + pressure + humidity, data = train_data)
+
+# Get the estimated coefficients (including intercept)
+coef_estimates <- coef(best_model_train)
+print(coef_estimates)
+
+# We select 'temperature' and 'vacuum' as influential parameters for ABC
+beta_temp <- coef_estimates["temperature"]
+beta_vacuum <- coef_estimates["vacuum"]
+
+# --- Step 2: Define ±20% uniform priors for the chosen parameters ---
+# Define prior ranges ±20%
+prior_temp <- sort(c(0.8 * beta_temp, 1.2 * beta_temp))
+prior_vacuum <- sort(c(0.8 * beta_vacuum, 1.2 * beta_vacuum))
+
+cat("Temperature prior range:", prior_temp, "\n")
+cat("Vacuum prior range:", prior_vacuum, "\n")
+
+# --- Step 3: Fix other coefficients from best model ---
+# Keep intercept, pressure, humidity fixed as per estimated coefficients
+beta_intercept <- coef_estimates["(Intercept)"]
+beta_pressure <- coef_estimates["pressure"]
+beta_humidity <- coef_estimates["humidity"]
+
+# We'll use the test data for prediction and error calculation
+X_test <- test_data
+
+# --- Step 4: Rejection Sampling for ABC ---
+set.seed(123)  # for reproducibility
+n_samples <- 10000  # number of candidate samples
+tolerance <- 5  # RMSE tolerance threshold for acceptance
+
+# Prepare storage for accepted samples
+accepted_temp <- numeric()
+accepted_vacuum <- numeric()
+
+for (i in 1:n_samples) {
+  # Sample candidate parameters from uniform priors
+  sample_temp <- runif(1, prior_temp[1], prior_temp[2])
+  sample_vacuum <- runif(1, prior_vacuum[1], prior_vacuum[2])
+  
+  # Predict energy output using sampled parameters and fixed other coefficients
+  pred <- beta_intercept +
+    sample_temp * X_test$temperature +
+    sample_vacuum * X_test$vacuum +
+    beta_pressure * X_test$pressure +
+    beta_humidity * X_test$humidity
+  
+  # Calculate RMSE between predicted and actual energy output
+  rmse_sample <- sqrt(mean((X_test$energy_output - pred)^2))
+  
+  # Accept sample if RMSE below tolerance
+  if (rmse_sample < tolerance) {
+    accepted_temp <- c(accepted_temp, sample_temp)
+    accepted_vacuum <- c(accepted_vacuum, sample_vacuum)
+  }
+}
+
+cat("Number of accepted samples:", length(accepted_temp), "\n")
+
+# --- Step 5: Plot posterior distributions ---
+
+# Combine accepted samples into a data frame
+posterior_samples <- data.frame(temperature = accepted_temp, vacuum = accepted_vacuum)
+
+# 2D joint posterior scatter plot
+ggplot(posterior_samples, aes(x = temperature, y = vacuum)) +
+  geom_point(alpha = 0.3, color = "darkgreen") +
+  labs(title = "2D Joint Posterior of Temperature and Vacuum",
+       x = "Temperature coefficient",
+       y = "Vacuum coefficient") +
+  theme_minimal()
+
+# 1D marginal posterior histograms
+ggplot(posterior_samples, aes(x = temperature)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "1D Marginal Posterior - Temperature coefficient",
+       x = "Temperature coefficient",
+       y = "Frequency") +
+  theme_minimal()
+
+ggplot(posterior_samples, aes(x = vacuum)) +
+  geom_histogram(bins = 30, fill = "salmon", color = "black") +
+  labs(title = "1D Marginal Posterior - Vacuum coefficient",
+       x = "Vacuum coefficient",
+       y = "Frequency") +
+  theme_minimal()
+
+# --- Step 6: Interpretation ---
+# You will analyze the shape, spread, and correlation of the posterior samples visually from the plots.
+
+
+
+
+
+
+# Compare all models on test RMSE
+library(Metrics)  # for rmse()
+
+rmse_model1 <- rmse(test_data$energy_output, predict(model1, newdata = test_data))
+rmse_model2 <- rmse(test_data$energy_output, predict(model2, newdata = test_data))
+rmse_model3 <- rmse(test_data$energy_output, predict(model3, newdata = test_data))
+rmse_model4 <- rmse(test_data$energy_output, predict(model4, newdata = test_data))
+rmse_model5 <- rmse(test_data$energy_output, predict(model5, newdata = test_data))
+
+rmse_values <- data.frame(
+  Model = paste0("Model", 1:5),
+  RMSE = c(rmse_model1, rmse_model2, rmse_model3, rmse_model4, rmse_model5)
+)
+
+print(rmse_values)
+
+```
